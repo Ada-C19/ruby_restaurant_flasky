@@ -1,4 +1,5 @@
 from flask import abort, Blueprint, jsonify, make_response, request
+from sqlalchemy import asc 
 from app import db
 from app.models.restaurant import Restaurant
 from app.models.employee import Employee
@@ -21,7 +22,7 @@ def get_restaurants():
     name_query = request.args.get("name")
 
     if name_query is None:
-        all_restaurants = Restaurant.query.all()
+        all_restaurants = Restaurant.query.order_by(asc(Restaurant.id)).all()
     else:
         all_restaurants = Restaurant.query.filter_by(name=name_query)
 
@@ -87,6 +88,17 @@ def get_all_employees_of_restaurant(rest_id):
     employees = [employee.to_dict() for employee in restaurant.employees]
 
     return jsonify(employees), 200
+
+@restaurant_bp.route("/<rest_id>/rating", methods=["PATCH"])
+def patch_rating_of_restaurant(rest_id):
+    restaurant = validate_item(Restaurant, rest_id)
+
+    request_data = request.get_json()
+    restaurant.rating = request_data["value"]
+
+    db.session.commit()
+
+    return {"msg": f"restaurant {rest_id} rating successfully updated"}, 200
 
 def validate_item(model, item_id):
     try:
