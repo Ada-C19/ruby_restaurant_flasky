@@ -1,4 +1,5 @@
 from flask import abort, Blueprint, jsonify, make_response, request
+from sqlalchemy import asc 
 from app import db
 from app.models.restaurant import Restaurant
 from app.models.employee import Employee
@@ -21,7 +22,7 @@ def get_restaurants():
     name_query = request.args.get("name")
 
     if name_query is None:
-        all_restaurants = Restaurant.query.all()
+        all_restaurants = Restaurant.query.order_by(asc(Restaurant.id)).all()
     else:
         all_restaurants = Restaurant.query.filter_by(name=name_query)
 
